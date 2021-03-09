@@ -9,7 +9,7 @@
   "mac": true,
   "docker": true,
   "name": "mbox",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": {
     "en": "mbox",
     "es": "mbox",
@@ -58,6 +58,23 @@
               "en": "Variable name without {}"
             },
             "id": "var_",
+            "css": "col-md-12"
+          },
+          {
+            "type": "folder_select",
+            "placeholder": {
+              "es": "C:\\User\\Desktop\\Files",
+              "en": "C:\\User\\Desktop\\Files"
+            },
+            "title": {
+              "es": "Carpeta (Varios archivos):",
+              "en": "Folder (Multiple files):"
+            },
+            "help": {
+              "es": "Para varios adjuntos, ingresar ruta a carpeta",
+              "en": "For several attachments, enter folder path"
+            },
+            "id": "attached_folder",
             "css": "col-md-12"
           }
         ]

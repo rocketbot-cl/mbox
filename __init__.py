@@ -28,12 +28,13 @@ cur_path = base_path + 'modules' + os.sep + 'mbox' + os.sep + 'libs' + os.sep
 sys.path.append(cur_path)
 import mailbox
 import quopri
+from bs4 import BeautifulSoup
 
 """
     Obtengo el modulo que fueron invocados
 """
 module = GetParams("module")
-
+global attached_folder
 
 def get_body(mail):
     import quopri
@@ -51,9 +52,47 @@ def get_body(mail):
     return mail.get_payload()
 
 
+def extractattachements(message):
+    if message.get_content_maintype() == 'multipart':
+        for part in message.walk():
+            if part.get_content_maintype() == 'multipart': continue
+            if part.get('Content-Disposition') is None: continue
+            if part.get('Content-Disposition').startswith("inline"): continue
+            extension = part.get_content_type().split("/")[-1]
+            from random import randrange
+            file_name = int(randrange(999999))
+            path_files = attached_folder + os.sep + str(file_name)
+            fb = open(path_files + "." + extension, 'wb')
+            fb.write(part.get_payload(decode=True))
+            fb.close()
+
+
+def getbodyfromemail(msg, count=0):
+    global extractattachements
+    global getbodyfromemail
+    global BeautifulSoup
+    types_file = ["image/png", 'application/pdf']
+    body = ""
+    count += 1
+    if msg.is_multipart():
+        extractattachements(msg)
+        for part in msg.get_payload():
+            if part.get_content_type() not in types_file:
+                body += getbodyfromemail(part, count)
+    else:
+        html_body = msg.get_payload(decode=True).decode('latin-1')
+        try:
+            soup = BeautifulSoup(html_body, 'html.parser')
+            text = soup.body.get_text()
+        except Exception as e:
+            text = html_body
+        body += text
+    return body
+
 if module == "read":
     path = GetParams("path")
     result = GetParams("var_")
+    attached_folder = GetParams("attached_folder")
     mails = []
     try:
         for mail_ in mailbox.mbox(path):
@@ -63,7 +102,11 @@ if module == "read":
             data["date"] = mail_["Date"]
             data["to"] = mail_["To"]
             data["cc"] = mail_["Cc"] if mail_["Cc"] is not None else ""
-            body = get_body(mail_)
+            body = getbodyfromemail(mail_)
+            #soup = BeautifulSoup(body, 'html.parser')
+            #text = soup.find_all(text=True)
+            #text = soup.body.get_text()
+            data["body"] = body
             data["body"] = body
             mails.append(data)
         SetVar(result, mails)
