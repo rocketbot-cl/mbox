@@ -107,14 +107,23 @@ if module == "read":
     attached_folder = GetParams("attached_folder")
     mails = []
 
+    def get_mail_address(string):
+        import re
+        regex = r"([^@|\s]+@[^@]+\.[^@|\s]+)"
+
+        res = re.search(regex, string, re.I)
+        if res is not None:
+            return res.group().replace("'", "").replace(">","").replace("<","")
+        return string
+
     try:
         for mail_ in mailbox.mbox(path):
             attachment_files_mod_mbox = []
             data = dict()
-            data["from"] = mail_["From"]
+            data["from"] = mail_["Delivered-To"]
             data["subject"] = mail_["Subject"]
             data["date"] = mail_["Date"]
-            data["to"] = mail_["To"]
+            data["to"] = get_mail_address(mail_["To"])
             data["cc"] = mail_["Cc"] if mail_["Cc"] is not None else ""
             body = getbodyfromemail(mail_)
             data["attachments"] = attachment_files_mod_mbox
@@ -123,6 +132,7 @@ if module == "read":
             # text = soup.body.get_text()
             data["body"] = body
             mails.append(data)
+            print(data["to"])
         SetVar(result, mails)
     except Exception as e:
         PrintException()
