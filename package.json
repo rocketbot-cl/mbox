@@ -9,7 +9,7 @@
   "mac": true,
   "docker": true,
   "name": "mbox",
-  "version": "1.1.0",
+  "version": "1.2",
   "title": {
     "en": "mbox",
     "es": "mbox",
